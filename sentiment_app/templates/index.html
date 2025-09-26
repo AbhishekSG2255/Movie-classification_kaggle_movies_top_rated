@@ -1,0 +1,68 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Movie Explorer</title>
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+</head>
+<body>
+<div class="container">
+
+    <!-- Search Bar -->
+    <h1>🎬 Movie Explorer</h1>
+    <form class="search-form" method="get" action="{% url 'search_movie' %}">
+        <input type="text" name="q" placeholder="Search for a movie..." value="{{ query|default:'' }}" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Movie Results Section -->
+    {% if matches %}
+        {% if correction %}
+            <p>Showing results for <strong>{{ correction }}</strong> (auto-corrected from "{{ query }}").</p>
+        {% endif %}
+        <div class="results">
+            {% for movie in matches %}
+                <div class="movie-card">
+                    <img src="{{ movie.poster_url|default:'' }}" alt="{{ movie.title }} Poster" class="poster">
+                    <div class="details">
+                        <h2>{{ movie.title }}</h2>
+                        <p><strong>Genre:</strong> {{ movie.genre }}</p>
+                        <p><strong>Release:</strong> {{ movie.release_date }}</p>
+                        <p><strong>Rating:</strong> ⭐ {{ movie.rating }}/5</p>
+                        <p class="description">{{ movie.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h3>User Reviews</h3>
+        <div class="reviews">
+            {% if reviews %}
+                {% for r in reviews %}
+                    <div class="review-card">
+                        <p>"{{ r.text }}"</p>
+                        <p><strong>⭐ {{ r.rating }}/5</strong> - <em>{{ r.user }}</em></p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No reviews yet for these movies.</p>
+            {% endif %}
+        </div>
+    {% elif suggestions %}
+        <p>No exact matches for "{{ query }}". Did you mean:</p>
+        <ul>
+            {% for s in suggestions %}
+                <li><a href="{% url 'search_movie' %}?q={{ s|urlencode }}">{{ s }}</a></li>
+            {% endfor %}
+        </ul>
+    {% elif query %}
+        <p>No movie found for "{{ query }}".</p>
+    {% endif %}
+
+</div>
+</body>
+</html>
+
+
